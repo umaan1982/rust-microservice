@@ -8,6 +8,7 @@ extern crate env_logger;
 use std::collections::HashMap;
 use std::io;
 use serde_json::json;
+use maud::html;
 
 use futures::Stream;
 use hyper::server::{Request, Response, Service};
@@ -102,7 +103,6 @@ fn parse_query(query: &str) -> Result<TimeRange, String>{
 }
 
 fn fetch_messages(time_range: TimeRange) -> Option<Vec<NewMessage>> {
-    // Placeholder: Replace with actual logic to fetch messages based on the time range
     Some(vec![
         NewMessage {
             username: "user1".to_string(),
@@ -130,15 +130,21 @@ fn make_get_response(messages: Option<Vec<NewMessage>>) -> FutureResult<Response
 }
 
 fn render_page(messages: Vec<NewMessage>) -> String {
-    let mut html = String::from("<html><body><h1>Messages</h1><ul>");
-    for message in messages {
-        html.push_str(&format!(
-            "<li><strong>{}</strong>: {}</li>",
-            message.username, message.message
-        ));
-    }
-    html.push_str("</ul></body></html>");
-    html
+    (html! {
+        head {
+            title {"microservice"}
+            style {"body { font-family: monospace }"}
+        }
+        body {
+            { ul {
+                @for message in &messages {
+                    li {
+                        (message.username) " " (message.message)
+                    }
+                }
+            } }
+        }
+    }).into_string()
 }
 
 
@@ -195,6 +201,7 @@ fn make_error_response(error: &str) -> FutureResult<Response, hyper::Error> {
     debug!("Error response: {:?}", response);
     futures::future::ok(response)
 }
+
 
 fn main() {
     env_logger::init();
