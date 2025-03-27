@@ -22,6 +22,7 @@ impl Service for Microservice {
         let res = Response::new()
             .with_header(hyper::header::ContentType::plaintext())
             .with_body(response);
+        info!("Received request: {:?}", req);
         Box::new(futures::future::ok(res))
     }
 }
